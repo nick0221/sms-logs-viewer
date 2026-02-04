@@ -27,7 +27,12 @@ export function ChatBubble({ sms }: { sms: SMS }) {
         }`}
       >
         {/* Header showing sender → receiver */}
-        <div className="text-xs font-semibold mb-1">
+        <div
+          className={
+            `text-xs font-semibold mb-1 ` +
+            (isOutbound ? "text-red-500" : "text-right")
+          }
+        >
           {isOutbound
             ? `To: ${formatPhoneNumber(sms.to)}`
             : `From: ${sms.agentFirstName ? `${sms.agentFirstName} ${sms.agentLastName}` : formatPhoneNumber(sms.from)}`}
