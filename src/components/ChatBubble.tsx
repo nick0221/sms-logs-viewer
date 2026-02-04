@@ -5,11 +5,9 @@ import type { SMS } from "@/types/sms";
 export function ChatBubble({ sms }: { sms: SMS }) {
   const isOutbound = sms.direction === "outbound"; // Al Beahn sent this
 
-  //   console.log(sms);
-
   return (
     <div
-      className={`flex mb-3 ${isOutbound ? "justify-start" : "justify-end"}`}
+      className={`flex mb-1 min-w-0 p-1  ${isOutbound ? "justify-start" : "justify-end"}`}
     >
       {/* Avatar for inbound */}
       {isOutbound && (

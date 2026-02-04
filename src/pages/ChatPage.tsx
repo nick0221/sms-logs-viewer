@@ -38,11 +38,10 @@ export default function ChatPage() {
 
   return (
     <>
-      <div className="flex h-full w-full ">
-        {/* flex row */}
+      <div className="flex h-screen w-full">
         <Sidebar chats={chats} active={activePhone} onSelect={setActivePhone} />
+
         <div className="flex flex-col flex-1 min-w-0 h-full">
-          {/* chat panel */}
           <ChatHeader phone={activePhone} />
           <ChatWindow messages={activeMsgs} />
           <ChatInput />

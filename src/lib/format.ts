@@ -1,17 +1,20 @@
 export function formatPhoneNumber(phone: string | undefined) {
   if (!phone) return "--";
 
-  // Remove all non-digit characters
-  const digits = phone.replace(/\D/g, "");
+  const digits = phone.replace(/\D/g, ""); // remove everything non-digit
 
-  // Format only if 10 digits
-  if (digits.length === 10) {
-    const area = digits.slice(0, 3);
-    const prefix = digits.slice(3, 6);
-    const line = digits.slice(6, 10);
+  // If 11 digits and starts with '1', strip leading 1
+  const normalized =
+    digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  // Only format if 10 digits
+  if (normalized.length === 10) {
+    const area = normalized.slice(0, 3);
+    const prefix = normalized.slice(3, 6);
+    const line = normalized.slice(6, 10);
     return `(${area}) ${prefix}-${line}`;
   }
 
-  // Otherwise return as-is
+  // Otherwise return raw digits
   return phone;
 }
