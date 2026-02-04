@@ -1,3 +1,4 @@
+import { formatPhoneNumber } from "@/lib/format";
 import type { SMS } from "@/types/sms";
 
 export function ChatHeader({
@@ -16,7 +17,7 @@ export function ChatHeader({
           {phone?.slice(-2) || "--"}
         </div>
         <div>
-          <p className="font-semibold">{phone}</p>
+          <p className="font-semibold">{formatPhoneNumber(phone) || "--"}</p>
           {agent && (
             <p className="text-sm text-gray-500">
               {agent.agentFirstName} {agent.agentLastName}
