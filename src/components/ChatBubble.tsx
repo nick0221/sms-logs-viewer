@@ -7,10 +7,10 @@ export function ChatBubble({ sms }: { sms: SMS }) {
 
   return (
     <div
-      className={`flex mb-1 min-w-0 p-1  ${isOutbound ? "justify-start" : "justify-end"}`}
+      className={`flex mb-1 min-w-0 p-1  ${isOutbound ? "justify-end" : "justify-start"}`}
     >
       {/* Avatar for inbound */}
-      {isOutbound && (
+      {!isOutbound && (
         <div className="w-8 h-8 bg-gray-200 rounded-full mr-2 flex items-center justify-center">
           R
         </div>
@@ -28,10 +28,10 @@ export function ChatBubble({ sms }: { sms: SMS }) {
         <div
           className={
             `text-xs font-semibold mb-1 ` +
-            (isOutbound ? "text-red-500" : "text-right")
+            (isOutbound ? "text-red-500 text-right" : "")
           }
         >
-          {isOutbound
+          {!isOutbound
             ? `To: ${formatPhoneNumber(sms.to)}`
             : `From: ${sms.agentFirstName ? `${sms.agentFirstName} ${sms.agentLastName}` : formatPhoneNumber(sms.from)}`}
         </div>
@@ -52,7 +52,7 @@ export function ChatBubble({ sms }: { sms: SMS }) {
       </div>
 
       {/* Avatar for outbound */}
-      {!isOutbound && (
+      {isOutbound && (
         <div className="w-8 h-8 bg-blue-200 rounded-full ml-2 flex items-center justify-center">
           S
         </div>
