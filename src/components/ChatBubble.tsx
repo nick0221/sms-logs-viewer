@@ -20,15 +20,15 @@ export function ChatBubble({ sms }: { sms: SMS }) {
       <div
         className={`max-w-[65%] p-3 text-left text-sm rounded-xl ${
           isOutbound
-            ? "bg-gray-100 text-gray-900 rounded-br-none"
-            : "bg-blue-600 text-white rounded-bl-none"
+            ? "bg-blue-600 text-white rounded-br-none"
+            : "bg-gray-100 text-gray-900 rounded-bl-none"
         }`}
       >
         {/* Header showing sender → receiver */}
         <div
           className={
             `text-xs font-semibold mb-1 ` +
-            (isOutbound ? "text-red-500 text-right" : "")
+            (isOutbound ? "text-right" : "text-red-500 ")
           }
         >
           {!isOutbound
