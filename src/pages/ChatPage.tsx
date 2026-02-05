@@ -13,6 +13,8 @@ type ChatItem = {
   receiverLname?: string;
 };
 
+const OWNER_NUMBER = "15865517558"; // Exclude this number
+
 export default function ChatPage() {
   const [state, setState] = useState<{
     messages: SMS[];
@@ -20,7 +22,7 @@ export default function ChatPage() {
     activeSms: SMS | null;
   }>({
     messages: [],
-    activePhone: null, // start with no active conversation
+    activePhone: null,
     activeSms: null,
   });
 
@@ -36,13 +38,14 @@ export default function ChatPage() {
 
   const { messages, activePhone, activeSms } = state;
 
-  // Map messages to unique chats with receiver names
+  // Map messages to unique chats with receiver names, excluding owner
+
   const chats: ChatItem[] = useMemo(() => {
     const map = new Map<string, ChatItem>();
 
     messages.forEach((m) => {
-      const phone = m.direction === "inbound" ? m.from : m.to;
-      if (!phone) return;
+      const phone = m.to; // always use 'to' number
+      if (!phone || phone === OWNER_NUMBER) return;
 
       if (!map.has(phone)) {
         map.set(phone, {
@@ -78,9 +81,14 @@ export default function ChatPage() {
   };
 
   return (
-    <main className="flex max-w-screen h-screen overflow-hidden border  ">
+    <main className="flex max-w-screen h-screen overflow-hidden border">
       {/* Sidebar */}
-      <Sidebar chats={chats} active={activePhone} onSelect={handleSelect} />
+      <Sidebar
+        chats={chats}
+        active={activePhone}
+        onSelect={handleSelect}
+        excludeNumber={OWNER_NUMBER} // extra safety in Sidebar search
+      />
 
       {/* Chat area */}
       <div className="flex w-full flex-col flex-1 min-w-0 h-full">
@@ -95,8 +103,8 @@ export default function ChatPage() {
         {activePhone ? (
           <ChatWindow messages={activeMsgs} />
         ) : (
-          <div className="flex flex-1 h-screen min-w-0 text-gray-400 font-semibold">
-            <div className=" w-screen flex items-center justify-center ">
+          <div className="flex flex-1 min-w-0 text-gray-400 font-semibold">
+            <div className=" w-screen flex items-center justify-center">
               Select a conversation
             </div>
           </div>

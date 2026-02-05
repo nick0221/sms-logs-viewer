@@ -4,16 +4,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { formatPhoneNumber } from "@/lib/format";
 
 type ChatItem = {
-  phone: string;
-  receiverFname?: string;
-  receiverLname?: string;
+  phone: string; // 'To Number'
+  receiverFname?: string; // First name of receiver
+  receiverLname?: string; // Last name of receiver
 };
 
 type Props = {
   chats: ChatItem[];
-  active: string | null;
+  active: string | null; // phone number
   onSelect: (phone: string) => void;
-  excludeNumber?: string;
+  excludeNumber?: string; // owner's number
 };
 
 export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
@@ -28,35 +28,30 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
     const lastNameValid =
       receiverLname && receiverLname.toLowerCase() !== "unknown";
 
-    // Both valid → combine
     if (firstNameValid && lastNameValid)
       return `${receiverFname} ${receiverLname}`;
-    // Only first name valid
     if (firstNameValid) return receiverFname!;
-    // Only last name valid
     if (lastNameValid) return receiverLname!;
-    // Both unknown or missing → fallback to "Unknown"
     return "Unknown";
   };
 
   const filteredChats = useMemo(() => {
+    const query = search.toLowerCase();
+
     return chats
       .filter((chat) => {
         if (excludeNumber && chat.phone === excludeNumber) return false;
-        const query = search.toLowerCase();
         const name = getDisplayName(chat).toLowerCase();
         const phone = (chat.phone || "").toLowerCase();
-
         return name.includes(query) || phone.includes(query);
       })
       .sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b)));
   }, [chats, search, excludeNumber]);
 
   return (
-    <div className="w-80 flex-none border-r h-full flex flex-col ">
+    <div className="w-80 flex-none border-r h-full flex flex-col">
       <h2 className="text-xl font-semibold p-4">SMS Logs Lookup</h2>
 
-      {/* Live search */}
       <div className="px-4 pb-2">
         <input
           type="text"
@@ -67,7 +62,6 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
         />
       </div>
 
-      {/* Chat list */}
       <div className="flex-1 overflow-y-auto">
         {filteredChats.map((chat) => {
           const displayName = getDisplayName(chat);
@@ -91,8 +85,7 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
 
               <div className="min-w-0">
                 <p className="font-medium truncate">{displayName}</p>
-
-                <p className="text-left text-xs text-gray-500">
+                <p className="text-xs text-gray-500">
                   {formatPhoneNumber(chat.phone)}
                 </p>
               </div>
