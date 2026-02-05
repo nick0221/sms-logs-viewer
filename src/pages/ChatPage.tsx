@@ -95,8 +95,10 @@ export default function ChatPage() {
         {activePhone ? (
           <ChatWindow messages={activeMsgs} />
         ) : (
-          <div className="flex flex-1 border  h-screen w-screen text-center min-w-0 justify-center items-center  text-gray-400 font-semibold">
-            <div className="border">Select a conversation</div>
+          <div className="flex flex-1 h-screen min-w-0 text-gray-400 font-semibold">
+            <div className=" w-screen flex items-center justify-center ">
+              Select a conversation
+            </div>
           </div>
         )}
 
