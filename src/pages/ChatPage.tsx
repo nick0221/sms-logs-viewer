@@ -5,113 +5,124 @@ import { Sidebar } from "@/components/Sidebar";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
+import CenteredLoader from "@/components/Loader";
+import EmptyState from "@/components/EmptyState";
 import type { SMS } from "@/types/sms";
 
 type ChatItem = {
   phone: string;
   receiverFname?: string;
   receiverLname?: string;
+  lastMessageAt: string;
 };
 
 const OWNER_NUMBER = "15865517558"; // Exclude this number
 
 export default function ChatPage() {
-  const [state, setState] = useState<{
-    messages: SMS[];
-    activePhone: string | null;
-    activeSms: SMS | null;
-  }>({
-    messages: [],
-    activePhone: null,
-    activeSms: null,
-  });
+  const [messages, setMessages] = useState<SMS[]>([]);
+  const [activePhone, setActivePhone] = useState<string | null>(null);
+  const [activeSms, setActiveSms] = useState<SMS | null>(null);
+
+  const [isFetching, setIsFetching] = useState(true);
+  const [isSwitching, setIsSwitching] = useState(false);
 
   // Fetch SMS once
   useEffect(() => {
-    fetchSMS().then((data) => {
-      setState((prev) => ({
-        ...prev,
-        messages: data,
-      }));
-    });
+    const loadMessages = async () => {
+      setIsFetching(true);
+      const data = await fetchSMS();
+      setMessages(data);
+      setIsFetching(false);
+    };
+
+    loadMessages();
   }, []);
 
-  const { messages, activePhone, activeSms } = state;
-
-  // Map messages to unique chats with receiver names, excluding owner
-
+  // Build sidebar conversations, exclude owner, pick latest message per phone
   const chats: ChatItem[] = useMemo(() => {
     const map = new Map<string, ChatItem>();
 
     messages.forEach((m) => {
-      const phone = m.to; // always use 'to' number
+      const phone = m.direction === "inbound" ? m.from : m.to;
       if (!phone || phone === OWNER_NUMBER) return;
 
-      if (!map.has(phone)) {
+      const existing = map.get(phone);
+      const currentTime = new Date(m.datetime).getTime();
+
+      if (
+        !existing ||
+        currentTime > new Date(existing.lastMessageAt).getTime()
+      ) {
         map.set(phone, {
           phone,
           receiverFname: m.receiverFname,
           receiverLname: m.receiverLname,
+          lastMessageAt: m.datetime,
         });
       }
     });
 
-    return Array.from(map.values());
+    // Sort descending: newest first
+    return Array.from(map.values()).sort(
+      (a, b) =>
+        new Date(b.lastMessageAt).getTime() -
+        new Date(a.lastMessageAt).getTime(),
+    );
   }, [messages]);
 
-  // Only show messages if a conversation is selected
-  const activeMsgs = useMemo(
-    () =>
-      activePhone
-        ? messages.filter((m) => m.from === activePhone || m.to === activePhone)
-        : [],
-    [messages, activePhone],
-  );
+  // Messages for active conversation
+  const activeMsgs = useMemo(() => {
+    if (!activePhone) return [];
+    return messages.filter(
+      (m) => m.from === activePhone || m.to === activePhone,
+    );
+  }, [messages, activePhone]);
 
-  // Handle selecting a conversation
+  // Select a conversation with small async tick to avoid synchronous setState
   const handleSelect = (phone: string) => {
-    const sms =
-      messages.find((m) => m.from === phone || m.to === phone) || null;
+    setIsSwitching(true);
 
-    setState((prev) => ({
-      ...prev,
-      activePhone: phone,
-      activeSms: sms,
-    }));
+    requestAnimationFrame(() => {
+      const sms =
+        messages.find((m) => m.from === phone || m.to === phone) || null;
+      setActivePhone(phone);
+      setActiveSms(sms);
+      setIsSwitching(false);
+    });
   };
 
   return (
-    <main className="flex max-w-screen h-screen overflow-hidden border">
+    <main className="flex max-w-screen h-screen overflow-hidden">
       {/* Sidebar */}
       <Sidebar
         chats={chats}
         active={activePhone}
         onSelect={handleSelect}
-        excludeNumber={OWNER_NUMBER} // extra safety in Sidebar search
+        excludeNumber={OWNER_NUMBER}
       />
 
       {/* Chat area */}
-      <div className="flex w-full flex-col flex-1 min-w-0 h-full">
+      <div className="flex flex-col flex-1 min-w-0 h-full">
         {/* Header */}
-        {activeSms ? (
+        {activeSms && !isSwitching ? (
           <ChatHeader sms={activeSms} />
         ) : (
-          <div className="flex w-full items-center justify-center flex-0 border-b text-gray-400 h-16" />
+          <div className="h-16 border-b" />
         )}
 
-        {/* Messages */}
-        {activePhone ? (
-          <ChatWindow messages={activeMsgs} />
+        {/* Content */}
+        {isFetching ? (
+          <CenteredLoader label="Loading messages…" />
+        ) : isSwitching ? (
+          <CenteredLoader label="Loading conversation…" />
+        ) : activePhone ? (
+          <>
+            <ChatWindow messages={activeMsgs} />
+            <ChatInput />
+          </>
         ) : (
-          <div className="flex flex-1 min-w-0 text-gray-400 font-semibold">
-            <div className=" w-screen flex items-center justify-center">
-              Select a conversation
-            </div>
-          </div>
+          <EmptyState />
         )}
-
-        {/* Input */}
-        {activePhone && <ChatInput />}
       </div>
     </main>
   );

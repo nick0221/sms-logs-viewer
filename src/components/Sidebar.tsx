@@ -7,6 +7,7 @@ type ChatItem = {
   phone: string; // 'To Number'
   receiverFname?: string; // First name of receiver
   receiverLname?: string; // Last name of receiver
+  lastMessageAt: string; // ISO date string
 };
 
 type Props = {
@@ -40,12 +41,17 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
 
     return chats
       .filter((chat) => {
-        if (excludeNumber && chat.phone === excludeNumber) return false;
+        const phone = (chat.phone || "").replace(/\D/g, "");
+        if (excludeNumber && phone === excludeNumber) return false;
+
         const name = getDisplayName(chat).toLowerCase();
-        const phone = (chat.phone || "").toLowerCase();
         return name.includes(query) || phone.includes(query);
       })
-      .sort((a, b) => getDisplayName(a).localeCompare(getDisplayName(b)));
+      .sort((a, b) => {
+        const ta = Date.parse(a.lastMessageAt) || 0;
+        const tb = Date.parse(b.lastMessageAt) || 0;
+        return tb - ta;
+      });
   }, [chats, search, excludeNumber]);
 
   return (
