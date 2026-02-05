@@ -50,7 +50,7 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
 
   return (
     <div className="w-80 flex-none border-r h-full flex flex-col">
-      <h2 className="text-xl font-semibold p-4">SMS Logs Lookup</h2>
+      <h2 className="text-xl font-semibold p-4 text-center">SMS Logs Lookup</h2>
 
       <div className="px-4 pb-2">
         <input
