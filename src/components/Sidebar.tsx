@@ -50,13 +50,13 @@ export function Sidebar({ chats, active, onSelect, excludeNumber }: Props) {
 
   return (
     <div className="w-80 flex-none border-r h-full flex flex-col">
-      <div className="flex flex-col justify-center p-4 border-b">
+      <div className="flex flex-col justify-center p-4 ">
         <h2 className="text-xl font-bold text-center">SMS Logs Lookup</h2>
         <div className="text-center text-xs text-gray-500 py-1">
           History from August 2025 - January 2026
         </div>
       </div>
-      <div className="px-4 pb-5 py-3">
+      <div className="px-4 pb-5 py-3 shadow-md">
         <input
           type="text"
           placeholder="Search name or number…"
