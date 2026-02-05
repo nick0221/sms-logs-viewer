@@ -1,3 +1,4 @@
+import { MessagesSquare } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 
 import { fetchSMS } from "@/lib/sheets";
@@ -22,7 +23,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<SMS[]>([]);
   const [activePhone, setActivePhone] = useState<string | null>(null);
   const [activeSms, setActiveSms] = useState<SMS | null>(null);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile toggle
   const [isFetching, setIsFetching] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
 
@@ -34,14 +35,12 @@ export default function ChatPage() {
       setMessages(data);
       setIsFetching(false);
     };
-
     loadMessages();
   }, []);
 
-  // Build sidebar conversations, exclude owner, pick latest message per phone
+  // Build sidebar conversations, exclude owner
   const chats: ChatItem[] = useMemo(() => {
     const map = new Map<string, ChatItem>();
-
     messages.forEach((m) => {
       const phone = m.direction === "inbound" ? m.from : m.to;
       if (!phone || phone === OWNER_NUMBER) return;
@@ -62,7 +61,7 @@ export default function ChatPage() {
       }
     });
 
-    // Sort descending: newest first
+    // Sort newest first
     return Array.from(map.values()).sort(
       (a, b) =>
         new Date(b.lastMessageAt).getTime() -
@@ -78,31 +77,61 @@ export default function ChatPage() {
     );
   }, [messages, activePhone]);
 
-  // Select a conversation with small async tick to avoid synchronous setState
+  // Select a conversation
   const handleSelect = (phone: string) => {
     setIsSwitching(true);
-
     requestAnimationFrame(() => {
       const sms =
         messages.find((m) => m.from === phone || m.to === phone) || null;
       setActivePhone(phone);
       setActiveSms(sms);
+      setSidebarOpen(false); // close sidebar on mobile
       setIsSwitching(false);
     });
   };
 
   return (
-    <main className="flex max-w-screen h-screen overflow-hidden">
+    <main className="flex h-screen w-screen overflow-hidden bg-white">
       {/* Sidebar */}
-      <Sidebar
-        chats={chats}
-        active={activePhone}
-        onSelect={handleSelect}
-        excludeNumber={OWNER_NUMBER}
-      />
+      <div
+        className={`fixed inset-y-0 left-0 z-20 border-r bg-white transform transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 md:static md:flex`}
+      >
+        <Sidebar
+          chats={chats}
+          active={activePhone}
+          onSelect={handleSelect}
+          excludeNumber={OWNER_NUMBER}
+        />
+      </div>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-10 bg-white/20 backdrop-blur-lg bg-opacity-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Chat area */}
-      <div className="flex flex-col flex-1 min-w-0 h-full">
+      <div className="flex  flex-col flex-1 min-w-0 h-full ">
+        {/* Mobile top bar */}
+        <div className="flex items-center justify-between p-2 border-b md:hidden">
+          <button
+            className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+            onClick={() => setSidebarOpen(true)}
+          >
+            <MessagesSquare />
+          </button>
+          <span className="font-semibold truncate">
+            {activeSms
+              ? activeSms.receiverFname
+                ? `${activeSms.receiverFname} ${activeSms.receiverLname ?? ""}`
+                : activePhone
+              : ""}
+          </span>
+        </div>
+
         {/* Header */}
         {activeSms && !isSwitching ? (
           <ChatHeader sms={activeSms} />
@@ -116,10 +145,10 @@ export default function ChatPage() {
         ) : isSwitching ? (
           <CenteredLoader label="Loading conversation…" />
         ) : activePhone ? (
-          <>
+          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             <ChatWindow messages={activeMsgs} />
             <ChatInput />
-          </>
+          </div>
         ) : (
           <EmptyState />
         )}

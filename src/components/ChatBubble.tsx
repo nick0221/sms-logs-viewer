@@ -10,7 +10,6 @@ type ChatBubbleProps = {
 export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
   const isOutbound = sms.direction === "outbound";
 
-  console.log("sms", sms);
   // Format message date (day only)
   const msgDate = new Date(sms.datetime);
   const formattedDate = msgDate.toLocaleDateString([], {
@@ -35,7 +34,10 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
     <>
       {/* Date separator */}
       {showDate && (
-        <div className="flex items-center justify-center w-full py-2 select-none">
+        <div
+          className="flex items-center justify-center w-full py-2 select-none"
+          key={`${formattedDate}-${sms.datetime}`}
+        >
           <div className="w-16 border-t border-gray-200 " />
           <span className="mx-3 text-xs text-gray-400">{formattedDate}</span>
           <div className="w-16 border-t border-gray-200" />
