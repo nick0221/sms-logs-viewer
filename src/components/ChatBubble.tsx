@@ -10,6 +10,7 @@ type ChatBubbleProps = {
 export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
   const isOutbound = sms.direction === "outbound";
 
+  console.log("sms", sms);
   // Format message date (day only)
   const msgDate = new Date(sms.datetime);
   const formattedDate = msgDate.toLocaleDateString([], {
@@ -105,9 +106,10 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
         {/* Avatar for outbound */}
         {isOutbound && (
           <div className="w-8 h-8 bg-blue-200 rounded-full ml-2 flex items-center justify-center">
-            {sms.agentFirstName && sms.agentLastName
+            {/* {sms.agentFirstName && sms.agentLastName
               ? `${sms.agentFirstName[0]}${sms.agentLastName[0]}`
-              : sms.from.slice(-2)}
+              : sms.from.slice(-2)} */}
+            AB
           </div>
         )}
       </div>
