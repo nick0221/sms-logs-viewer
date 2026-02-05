@@ -56,7 +56,7 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
 
         {/* Message Bubble */}
         <div
-          className={`max-w-[75%] px-3 py-2 text-left text-sm rounded-xl wrap-break-word whitespace-pre-wrap ${
+          className={`max-w-[75%] px-3 text-left text-sm rounded-xl wrap-break-word whitespace-pre-wrap ${
             isOutbound
               ? "bg-blue-600 text-white rounded-br-none"
               : "bg-gray-100 text-gray-900 rounded-bl-none"
@@ -89,7 +89,7 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
 
           {/* Timestamp */}
           <div
-            className={`text-xs pt-4 ${
+            className={`text-xs py-4 ${
               isOutbound
                 ? "text-right text-gray-200"
                 : "text-left text-gray-500"
