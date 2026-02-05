@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import { fetchSMS } from "@/lib/sheets";
 import { Sidebar } from "@/components/Sidebar";
@@ -7,46 +7,102 @@ import { ChatWindow } from "@/components/ChatWindow";
 import { ChatInput } from "@/components/ChatInput";
 import type { SMS } from "@/types/sms";
 
-export default function ChatPage() {
-  const [messages, setMessages] = useState<SMS[]>([]);
-  const [activePhone, setActivePhone] = useState<string | null>(null);
+type ChatItem = {
+  phone: string;
+  receiverFname?: string;
+  receiverLname?: string;
+};
 
+export default function ChatPage() {
+  const [state, setState] = useState<{
+    messages: SMS[];
+    activePhone: string | null;
+    activeSms: SMS | null;
+  }>({
+    messages: [],
+    activePhone: null, // start with no active conversation
+    activeSms: null,
+  });
+
+  // Fetch SMS once
   useEffect(() => {
     fetchSMS().then((data) => {
-      setMessages(data);
-      setActivePhone(
-        data[0]?.direction === "inbound" ? data[0].from : data[0].to,
-      );
+      setState((prev) => ({
+        ...prev,
+        messages: data,
+      }));
     });
   }, []);
 
-  const chats = Array.from(
-    new Set(
-      messages
-        .map((m) => (m.direction === "inbound" ? m.from : m.to))
-        .filter((v): v is string => Boolean(v && v.trim())),
-    ),
+  const { messages, activePhone, activeSms } = state;
+
+  // Map messages to unique chats with receiver names
+  const chats: ChatItem[] = useMemo(() => {
+    const map = new Map<string, ChatItem>();
+
+    messages.forEach((m) => {
+      const phone = m.direction === "inbound" ? m.from : m.to;
+      if (!phone) return;
+
+      if (!map.has(phone)) {
+        map.set(phone, {
+          phone,
+          receiverFname: m.receiverFname,
+          receiverLname: m.receiverLname,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [messages]);
+
+  // Only show messages if a conversation is selected
+  const activeMsgs = useMemo(
+    () =>
+      activePhone
+        ? messages.filter((m) => m.from === activePhone || m.to === activePhone)
+        : [],
+    [messages, activePhone],
   );
 
-  const activeMsgs = messages.filter(
-    (m) => m.from === activePhone || m.to === activePhone,
-  );
+  // Handle selecting a conversation
+  const handleSelect = (phone: string) => {
+    const sms =
+      messages.find((m) => m.from === phone || m.to === phone) || null;
 
-  //   const activeMsg = messages.find(
-  //     (m) => m.from === activePhone || m.to === activePhone,
-  //   );
+    setState((prev) => ({
+      ...prev,
+      activePhone: phone,
+      activeSms: sms,
+    }));
+  };
 
   return (
-    <>
-      <div className="flex h-screen w-full">
-        <Sidebar chats={chats} active={activePhone} onSelect={setActivePhone} />
+    <main className="flex max-w-screen h-screen overflow-hidden border  ">
+      {/* Sidebar */}
+      <Sidebar chats={chats} active={activePhone} onSelect={handleSelect} />
 
-        <div className="flex flex-col flex-1 min-w-0 h-full">
-          <ChatHeader phone={activePhone} />
+      {/* Chat area */}
+      <div className="flex w-full flex-col flex-1 min-w-0 h-full">
+        {/* Header */}
+        {activeSms ? (
+          <ChatHeader sms={activeSms} />
+        ) : (
+          <div className="flex w-full items-center justify-center flex-0 border-b text-gray-400 h-16" />
+        )}
+
+        {/* Messages */}
+        {activePhone ? (
           <ChatWindow messages={activeMsgs} />
-          <ChatInput />
-        </div>
+        ) : (
+          <div className="flex flex-1 border  h-screen w-screen text-center min-w-0 justify-center items-center  text-gray-400 font-semibold">
+            <div className="border">Select a conversation</div>
+          </div>
+        )}
+
+        {/* Input */}
+        {activePhone && <ChatInput />}
       </div>
-    </>
+    </main>
   );
 }

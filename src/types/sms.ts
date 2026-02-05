@@ -7,4 +7,6 @@ export type SMS = {
   agentFirstName?: string;
   agentLastName?: string;
   agentEmail?: string;
+  receiverFname?: string;
+  receiverLname?: string;
 };
