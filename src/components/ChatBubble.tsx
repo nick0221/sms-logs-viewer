@@ -1,5 +1,5 @@
-import { formatPhoneNumber } from "@/lib/format";
 import { decodeUnicode } from "@/lib/utils";
+// import { formatPhoneNumber } from "@/lib/format";
 import type { SMS } from "@/types/sms";
 
 type ChatBubbleProps = {
@@ -34,8 +34,10 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
     <>
       {/* Date separator */}
       {showDate && (
-        <div className="w-full text-center py-2 text-xs text-gray-400 select-none">
-          {formattedDate}
+        <div className="flex items-center justify-center w-full py-2 select-none">
+          <div className="w-16 border-t border-gray-200 " />
+          <span className="mx-3 text-xs text-gray-400">{formattedDate}</span>
+          <div className="w-16 border-t border-gray-200" />
         </div>
       )}
 
@@ -54,7 +56,7 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
 
         {/* Message Bubble */}
         <div
-          className={`max-w-[75%] px-3  py-2 text-left text-sm rounded-xl wrap-break-word whitespace-pre-wrap ${
+          className={`max-w-[75%] px-3 py-2 text-left text-sm rounded-xl wrap-break-word whitespace-pre-wrap ${
             isOutbound
               ? "bg-blue-600 text-white rounded-br-none"
               : "bg-gray-100 text-gray-900 rounded-bl-none"
@@ -62,23 +64,22 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
         >
           {/* Header showing sender → receiver */}
           <div
-            className={`text-xs font-semibold   mb-3 ${
+            className={`text-xs font-semibold mb-3 ${
               isOutbound ? "text-right" : "text-red-500"
             }`}
           >
             {!isOutbound ? (
               <>
-                {sms.receiverFname && sms.receiverLname && (
+                {/* {sms.receiverFname && sms.receiverLname && (
                   <div>{`${sms.receiverFname} ${sms.receiverLname}`}</div>
                 )}
-                <div>{formatPhoneNumber(sms.to)}</div>
+                <div>{formatPhoneNumber(sms.to)}</div> */}
               </>
             ) : (
               <>
-                From:{" "}
-                {sms.agentFirstName && sms.agentLastName
+                {/* {sms.agentFirstName && sms.agentLastName
                   ? `${sms.agentFirstName} ${sms.agentLastName}`
-                  : formatPhoneNumber(sms.from)}
+                  : formatPhoneNumber(sms.from)} */}
               </>
             )}
           </div>
@@ -97,7 +98,7 @@ export function ChatBubble({ sms, previousSms }: ChatBubbleProps) {
             {msgDate.toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
-            })}
+            })}{" "}
           </div>
         </div>
 
